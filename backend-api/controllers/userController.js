@@ -1,10 +1,10 @@
-const User = require("../models/User")
-const Post = require("../models/Post")
-const Follow = require("../models/Follow")
-const jwt = require("jsonwebtoken")
+const User = require('../models/User')
+const Post = require('../models/Post')
+const Follow = require('../models/Follow')
+const jwt = require('jsonwebtoken')
 
 // how long a token lasts before expiring
-const tokenLasts = "365d"
+const tokenLasts = '30d'
 
 exports.apiGetPostsByUsername = async function (req, res) {
   try {
@@ -13,7 +13,7 @@ exports.apiGetPostsByUsername = async function (req, res) {
     //res.header("Cache-Control", "max-age=10").json(posts)
     res.json(posts)
   } catch (e) {
-    res.status(500).send("Sorry, invalid user requested.")
+    res.status(500).send('Sorry, invalid user requested.')
   }
 }
 
@@ -31,7 +31,7 @@ exports.apiMustBeLoggedIn = function (req, res, next) {
     req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET)
     next()
   } catch (e) {
-    res.status(500).send("Sorry, you must provide a valid token.")
+    res.status(500).send('Sorry, you must provide a valid token.')
   }
 }
 
@@ -58,12 +58,19 @@ exports.sharedProfileData = async function (req, res, next) {
   } catch (e) {
     viewerId = 0
   }
-  req.isFollowing = await Follow.isVisitorFollowing(req.profileUser._id, viewerId)
+  req.isFollowing = await Follow.isVisitorFollowing(
+    req.profileUser._id,
+    viewerId
+  )
 
   let postCountPromise = Post.countPostsByAuthor(req.profileUser._id)
   let followerCountPromise = Follow.countFollowersById(req.profileUser._id)
   let followingCountPromise = Follow.countFollowingById(req.profileUser._id)
-  let [postCount, followerCount, followingCount] = await Promise.all([postCountPromise, followerCountPromise, followingCountPromise])
+  let [postCount, followerCount, followingCount] = await Promise.all([
+    postCountPromise,
+    followerCountPromise,
+    followingCountPromise,
+  ])
 
   req.postCount = postCount
   req.followerCount = followerCount
@@ -78,9 +85,17 @@ exports.apiLogin = function (req, res) {
     .login()
     .then(function (result) {
       res.json({
-        token: jwt.sign({ _id: user.data._id, username: user.data.username, avatar: user.avatar }, process.env.JWTSECRET, { expiresIn: tokenLasts }),
+        token: jwt.sign(
+          {
+            _id: user.data._id,
+            username: user.data.username,
+            avatar: user.avatar,
+          },
+          process.env.JWTSECRET,
+          {expiresIn: tokenLasts}
+        ),
         username: user.data.username,
-        avatar: user.avatar
+        avatar: user.avatar,
       })
     })
     .catch(function (e) {
@@ -94,12 +109,20 @@ exports.apiRegister = function (req, res) {
     .register()
     .then(() => {
       res.json({
-        token: jwt.sign({ _id: user.data._id, username: user.data.username, avatar: user.avatar }, process.env.JWTSECRET, { expiresIn: tokenLasts }),
+        token: jwt.sign(
+          {
+            _id: user.data._id,
+            username: user.data.username,
+            avatar: user.avatar,
+          },
+          process.env.JWTSECRET,
+          {expiresIn: tokenLasts}
+        ),
         username: user.data.username,
-        avatar: user.avatar
+        avatar: user.avatar,
       })
     })
-    .catch(regErrors => {
+    .catch((regErrors) => {
       res.status(500).send(regErrors)
     })
 }
@@ -109,7 +132,7 @@ exports.apiGetHomeFeed = async function (req, res) {
     let posts = await Post.getFeed(req.apiUser._id)
     res.json(posts)
   } catch (e) {
-    res.status(500).send("Error")
+    res.status(500).send('Error')
   }
 }
 
@@ -129,7 +152,11 @@ exports.profileBasicData = function (req, res) {
     profileUsername: req.profileUser.username,
     profileAvatar: req.profileUser.avatar,
     isFollowing: req.isFollowing,
-    counts: { postCount: req.postCount, followerCount: req.followerCount, followingCount: req.followingCount }
+    counts: {
+      postCount: req.postCount,
+      followerCount: req.followerCount,
+      followingCount: req.followingCount,
+    },
   })
 }
 
@@ -139,7 +166,7 @@ exports.profileFollowers = async function (req, res) {
     //res.header("Cache-Control", "max-age=10").json(followers)
     res.json(followers)
   } catch (e) {
-    res.status(500).send("Error")
+    res.status(500).send('Error')
   }
 }
 
@@ -149,6 +176,6 @@ exports.profileFollowing = async function (req, res) {
     //res.header("Cache-Control", "max-age=10").json(following)
     res.json(following)
   } catch (e) {
-    res.status(500).send("Error")
+    res.status(500).send('Error')
   }
 }

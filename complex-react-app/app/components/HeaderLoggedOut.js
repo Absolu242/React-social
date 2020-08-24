@@ -16,12 +16,17 @@ export default function HeaderLoggedOut(props) {
       })
 
       if (response.data) {
-        localStorage.setItem('complexappToken', response.data.token)
-        localStorage.setItem('complexappUsername', response.data.username)
-        localStorage.setItem('complexappAvatar', response.data.avatar)
-        appDispatch({type: 'login'})
+        appDispatch({type: 'login', data: response.data})
+        appDispatch({
+          type: 'flashMessage',
+          value: 'You have successfully logged in',
+        })
       } else {
         console.log('Incorrect username / Password')
+        appDispatch({
+          type: 'flashMessage',
+          value: 'invalid username / password',
+        })
       }
     } catch (e) {
       console.log('There was a problem')
